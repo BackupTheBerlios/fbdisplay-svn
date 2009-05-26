@@ -1,0 +1,12 @@
+#!/usr/bin/expect
+
+set timeout 10000
+spawn telnet 192.168.202.111
+expect "login:"
+send "root\r"
+expect "Password:"
+send "root\r"
+expect "#"
+send "/bin/arm-9tdmi-linux-gnu-gdbserver 192.168.202.61:4711 /bin/fbdisplay > /dev/tty1\r"
+expect "#"
+exit
