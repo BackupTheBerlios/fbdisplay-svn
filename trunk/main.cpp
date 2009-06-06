@@ -15,11 +15,10 @@
 
 #include "ctextobj.h"
 #include "cclockobj.h"
+#include "structs.h"
 
-struct list_node {
-    struct list_node* next;
-    CObject* obj;
-};
+#include "cxmlparser.h"
+
 
 void sighandler(int signum)
 {
@@ -28,6 +27,26 @@ void sighandler(int signum)
 
 int main(int argc, char **argv)
 {
+    list_frame * pList = NULL;
+    list_frame * pListStart = NULL;
+    list_node * pNodeCur = NULL;
+
+    pListStart = parseFile("test.xml", pList);
+
+    //Check parsed data
+    pList = pListStart;
+    while (pList != NULL)
+    {
+        fprintf(stderr, "FrameID: %i\tFrametime: %i\n", pList->ulID, pList->ulTime);
+        pNodeCur = pList->node;
+        while (pNodeCur != NULL)
+        {
+            fprintf(stderr, "pos: %i %i %i %i\ttype: %i\n", pNodeCur->data.dPos.xPos, pNodeCur->data.dPos.yPos, pNodeCur->data.dPos.xSize, pNodeCur->data.dPos.ySize, pNodeCur->type);
+            pNodeCur = pNodeCur->next;
+        }
+        pList = pList->next;
+    }
+
     CTextObj* obj, *obj1;
 
     int fh;
