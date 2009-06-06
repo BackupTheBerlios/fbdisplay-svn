@@ -1,0 +1,43 @@
+<fbdisplay>
+  <frame>
+    <id>1</id>
+    <time>600</time>
+    <object>
+      <type>clock</type>
+      <pos>0,0,100,100</pos>
+      <clocktype>analog_sec</clocktype>
+    </object>
+    <object>
+      <type>text</type>
+      <pos>0,120,100,20</pos>
+      <speed>10</speed>
+      <data>Dies ist ein Test, hier stehen mehrere Sachen</data>
+    </object>
+    <object>
+      <type>graphic</type>
+      <pos>150,0,150,150</pos>
+      <path>~/bilder/BSO_Logo_small.bmp</path>
+    </object>
+  </frame>    
+  <frame>
+    <id>10</id>
+    <time>300</time>
+    <object>
+      <type>graphic</type>
+      <pos>0,0,400,200</pos>
+      <path>~/bilder/BSO_Logo.jpeg</path>
+    </object>
+  </frame>
+  <frame>
+    <id>100</id>
+    <time>3000</time>
+    <object>
+      <type>text</type>
+      <pos>800,90,4711,1982</pos>
+      <speed>-100</speed>
+      <data>was weiss denn ich was ich da tippen soll?
+mal sehen wie das mit zeilenumbruch
+so ausschaut</data>
+    </object>
+  </frame>
+</fbdisplay>
