@@ -1,19 +1,16 @@
 #include "cxmlparser.h"
 
-list_frame * parseFile(char * xmlName, list_frame * pFrame)
+void parseFile(char * xmlName, std::list<list_frame> * pFrame)
 {
     xmlDocPtr pDoc = NULL;
     xmlNodePtr pNode = NULL;
-
-    list_frame * pFrmStart = pFrame;
-    list_node * pList = NULL;
 
     pDoc = xmlParseFile(xmlName);
 
     if (pDoc == NULL)
     {
         fprintf(stderr, "Parsing error\n");
-        return pFrame;
+        return;
     }
 
     pNode = xmlDocGetRootElement(pDoc);
@@ -22,45 +19,35 @@ list_frame * parseFile(char * xmlName, list_frame * pFrame)
     {
         fprintf(stderr, "Wrong file type, root node != fbdisplay\n");
         xmlFreeDoc(pDoc);
-        return pFrame;
+        return;
     }
 
     pNode = pNode->xmlChildrenNode;
+
     while (pNode != NULL)
     {
         if ((!xmlStrcmp(pNode->name, (const xmlChar *)"frame")))
         {
-            if (pFrame == NULL)
-            {
-                pFrame = new list_frame;
-                pFrmStart = pFrame;
-                pFrame->next = NULL;
-                pFrame->node = NULL;
+            list_frame pDummy;
+            pDummy.node = NULL;
+            pDummy.ulID = 0;
+            pDummy.ulTime = 0;
 
-                parseFrame(pDoc, pNode, pFrame);
-            }
-            else
-            {
-                pFrame->next = new list_frame;
-                pFrame->next->next = NULL;
-                pFrame->next->node = NULL;
-                pFrame = pFrame->next;
+            pFrame->push_back(pDummy);
 
-                parseFrame(pDoc, pNode, pFrame);
-            }
+            parseFrame(pDoc, pNode, &pFrame->back());
         }
         pNode = pNode->next;
     }
 
     xmlFreeDoc(pDoc);
 
-    return pFrmStart;
+    return;
 }
 
 void parseFrame(xmlDocPtr pDoc, xmlNodePtr pNode, list_frame * pFrame)
 {
     xmlChar * key = NULL;
-    list_node * pList = pFrame->node;
 
     pNode = pNode->xmlChildrenNode;
 
@@ -68,21 +55,19 @@ void parseFrame(xmlDocPtr pDoc, xmlNodePtr pNode, list_frame * pFrame)
     {
         if (!xmlStrcmp(pNode->name, (const xmlChar *)"object"))
         {
-            if (pList == NULL)
+            list_node pDummy;;
+
+            if (pFrame->node == NULL)
             {
-                pFrame->node = new list_node;
-                pList = pFrame->node;
+                pFrame->node = new std::list<list_node>;
             }
-            else
-            {
-                pList->next = new list_node;
-                pList = pList->next;
-            }
-            pList->next = NULL;
-            pList->type = NOTVALID;
-            pList->obj = NULL;
-            memset(&pList->data, 0, sizeof(objData));
-            parseObject(pDoc, pNode, pList);
+
+            pDummy.obj = NULL;
+            pDummy.type = NOTVALID;
+            memset(&pDummy.data, 0, sizeof(objData));
+            pFrame->node->push_back(pDummy);
+
+            parseObject(pDoc, pNode, &pFrame->node->back());
         }
         else if (!xmlStrcmp(pNode->name, (const xmlChar *)"time"))
         {

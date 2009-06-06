@@ -10,16 +10,12 @@
 
 #include "structs.h"
 
+void parseFile(char * xmlName, std::list<list_frame> * pFrame);
 
-
-
-    list_frame * parseFile(char * xmlName, list_frame * pFrame);
-
-
-    void parseFrame(xmlDocPtr pDoc, xmlNodePtr pNode, list_frame * pFrame);
-    void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, list_node * pList);
-    eType getType(xmlDocPtr pDoc, xmlNodePtr pNode);
-    void getPos(const char * str, posData &dat);
+void parseFrame(xmlDocPtr pDoc, xmlNodePtr pNode, list_frame * pFrame);
+void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, list_node * pList);
+eType getType(xmlDocPtr pDoc, xmlNodePtr pNode);
+void getPos(const char * str, posData &dat);
 
 
 #endif

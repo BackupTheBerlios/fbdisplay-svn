@@ -27,24 +27,23 @@ void sighandler(int signum)
 
 int main(int argc, char **argv)
 {
-    list_frame * pList = NULL;
-    list_frame * pListStart = NULL;
-    list_node * pNodeCur = NULL;
+    std::list<list_frame> pFrameList;
 
-    pListStart = parseFile("test.xml", pList);
+    parseFile("test.xml", &pFrameList);
 
     //Check parsed data
-    pList = pListStart;
-    while (pList != NULL)
+    std::list<list_frame>::iterator itFrm = pFrameList.begin();
+    std::list<list_node>::iterator itNode = itFrm->node->begin();
+    while (itFrm != pFrameList.end())
     {
-        fprintf(stderr, "FrameID: %i\tFrametime: %i\n", pList->ulID, pList->ulTime);
-        pNodeCur = pList->node;
-        while (pNodeCur != NULL)
+        fprintf(stderr, "FrameID: %i\tFrametime: %i\n", itFrm->ulID, itFrm->ulTime);
+        itNode = itFrm->node->begin();
+        while (itNode != itFrm->node->end())
         {
-            fprintf(stderr, "pos: %i %i %i %i\ttype: %i\n", pNodeCur->data.dPos.xPos, pNodeCur->data.dPos.yPos, pNodeCur->data.dPos.xSize, pNodeCur->data.dPos.ySize, pNodeCur->type);
-            pNodeCur = pNodeCur->next;
+            fprintf(stderr, "pos: %i %i %i %i\ttype: %i\n", itNode->data.dPos.xPos, itNode->data.dPos.yPos, itNode->data.dPos.xSize, itNode->data.dPos.ySize, itNode->type);
+            itNode++;
         }
-        pList = pList->next;
+        itFrm++;
     }
 
     CTextObj* obj, *obj1;

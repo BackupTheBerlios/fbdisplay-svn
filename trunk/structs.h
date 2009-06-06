@@ -2,6 +2,7 @@
 #define __STRUCTS_H
 
 #include <string.h>
+#include <list>
 #include "cobject.h"
 
 enum clock_type {
@@ -63,15 +64,13 @@ enum eType {
 };
 
 struct list_node {
-    struct list_node* next;
     eType type;
     objData data;
     CObject* obj;
 };
 
 struct list_frame{
-    struct list_frame* next;
-    list_node * node;
+    std::list<list_node> * node;
     unsigned long ulTime;
     unsigned long ulID;
 };
