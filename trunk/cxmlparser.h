@@ -16,6 +16,8 @@ void parseFrame(xmlDocPtr pDoc, xmlNodePtr pNode, list_frame * pFrame);
 void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, list_node * pList);
 eType getType(xmlDocPtr pDoc, xmlNodePtr pNode);
 void getPos(const char * str, posData &dat);
+void sortFrame(std::list<list_frame> * pFrame);
+bool compareFrames(list_frame first, list_frame second);
 
 
 #endif

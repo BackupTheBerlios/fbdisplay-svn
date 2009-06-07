@@ -42,6 +42,8 @@ void parseFile(char * xmlName, std::list<list_frame> * pFrame)
 
     xmlFreeDoc(pDoc);
 
+    sortFrame(pFrame);
+
     return;
 }
 
@@ -223,4 +225,27 @@ void getPos(const char * str, posData &dat)
     while (str[i] != ',') ++i;
     dat.ySize = atoi(str + ++i);
     return;
+}
+
+void sortFrame(std::list<list_frame> * pFrame)
+{
+    if (pFrame == NULL)
+    {
+        return;
+    }
+
+    pFrame->sort(compareFrames);
+    return;
+}
+
+bool compareFrames(list_frame first, list_frame second)
+{
+    if (first.ulID < second.ulID)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }

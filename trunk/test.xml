@@ -1,6 +1,6 @@
 <fbdisplay>
   <frame>
-    <id>1</id>
+    <id>100</id>
     <time>600</time>
     <object>
       <type>clock</type>
@@ -29,7 +29,7 @@
     </object>
   </frame>
   <frame>
-    <id>100</id>
+    <id>1</id>
     <time>3000</time>
     <object>
       <type>text</type>
