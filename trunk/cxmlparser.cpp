@@ -5,6 +5,12 @@ void parseFile(char * xmlName, std::list<list_frame> * pFrame)
     xmlDocPtr pDoc = NULL;
     xmlNodePtr pNode = NULL;
 
+    if (pFrame == NULL)
+    {
+        fprintf(stderr, "No list to store\n");
+        return;
+    }
+
     pDoc = xmlParseFile(xmlName);
 
     if (pDoc == NULL)
@@ -248,4 +254,33 @@ bool compareFrames(list_frame first, list_frame second)
     {
         return false;
     }
+}
+void removeFrames(std::list<list_frame> * pFrame)
+{
+    pFrame->clear();
+    return;
+}
+
+void removeFrames(std::list<list_frame> * pFrame, std::list<list_frame>::iterator itExept)
+{
+    std::list<list_frame>::iterator itBegin;
+    std::list<list_frame>::iterator itEnd;
+
+    itEnd = pFrame->end();
+    itEnd--;
+    if (itExept != itEnd)
+    {
+        itBegin = itExept;
+        itBegin++;
+        itEnd = pFrame->end();
+        pFrame->erase(itBegin, itEnd);
+    }
+    itBegin = pFrame->begin();
+    if (itExept != itBegin)
+    {
+        itEnd = itExept;
+        pFrame->erase(itBegin,itEnd);
+    }
+
+    return;
 }

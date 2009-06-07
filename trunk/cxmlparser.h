@@ -18,6 +18,7 @@ eType getType(xmlDocPtr pDoc, xmlNodePtr pNode);
 void getPos(const char * str, posData &dat);
 void sortFrame(std::list<list_frame> * pFrame);
 bool compareFrames(list_frame first, list_frame second);
-
+void removeFrames(std::list<list_frame> * pFrame);
+void removeFrames(std::list<list_frame> * pFrame, std::list<list_frame>::iterator itExept);
 
 #endif

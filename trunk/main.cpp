@@ -31,7 +31,10 @@ int main(int argc, char **argv)
 
     parseFile("test.xml", &pFrameList);
 
+    removeFrames(&pFrameList, ++pFrameList.begin());
+
     //Check parsed data
+    fprintf(stderr, "Number of Frames: %i\n", pFrameList.size());
     std::list<list_frame>::iterator itFrm = pFrameList.begin();
     std::list<list_node>::iterator itNode = itFrm->node->begin();
     while (itFrm != pFrameList.end())
