@@ -45,12 +45,11 @@
 		<Unit filename="cobject.h" />
 		<Unit filename="ctextobj.cpp" />
 		<Unit filename="ctextobj.h" />
-		<Unit filename="cxmlparser.cpp" />
-		<Unit filename="cxmlparser.h" />
 		<Unit filename="font.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="startdebug" />
-		<Unit filename="structs.h" />
+		<Unit filename="xmlparser.cpp" />
+		<Unit filename="xmlparser.h" />
 		<Extensions>
 			<code_completion />
 			<debugger>

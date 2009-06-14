@@ -4,8 +4,13 @@
 #include "cobject.h"
 #include "font.h"
 #include "time.h"
-#include "structs.h"
 
+enum clock_type {
+    CLOCK_DIGI,
+    CLOCK_DIGI_SEC,
+    CLOCK_ANALOG,
+    CLOCK_ANALOG_SEC
+};
 
 struct line_typ {
   unsigned short x1;
