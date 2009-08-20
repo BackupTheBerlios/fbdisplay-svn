@@ -37,6 +37,12 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Linker>
+			<Add library="libpng" />
+			<Add library="libz" />
+		</Linker>
+		<Unit filename="bmp.cpp" />
+		<Unit filename="bmp.h" />
 		<Unit filename="cclockobj.cpp" />
 		<Unit filename="cclockobj.h" />
 		<Unit filename="cgraphicobj.cpp" />
@@ -47,6 +53,8 @@
 		<Unit filename="ctextobj.h" />
 		<Unit filename="font.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="png.cpp" />
+		<Unit filename="png.h" />
 		<Unit filename="startdebug" />
 		<Unit filename="xmlparser.cpp" />
 		<Unit filename="xmlparser.h" />

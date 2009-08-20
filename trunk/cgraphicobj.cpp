@@ -9,3 +9,5 @@ bool CGraphicObj::Refresh(void)
 {
     return true;
 }
+
+

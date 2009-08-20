@@ -22,9 +22,9 @@ struct line_typ {
 struct analog_clock{
     unsigned short radius;
     struct line_typ line[3];
-    unsigned short h[15];
-    unsigned short min[15];
-    unsigned short s[15];
+    unsigned short h[16];
+    unsigned short min[16];
+    unsigned short s[16];
 };
 
 class CClockObj : public CObject

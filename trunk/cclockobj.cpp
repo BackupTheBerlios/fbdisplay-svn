@@ -1,10 +1,13 @@
 #include "cclockobj.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 CClockObj::CClockObj(const struct fbinfo& info)
 : CObject(info)
 {
-    m_type = CLOCK_ANALOG;
+    m_type = CLOCK_ANALOG_SEC;
 }
 
 CClockObj::~CClockObj()
@@ -60,7 +63,7 @@ void CClockObj::InitAnalog(void)
         m_panalog_clock->line[i].y2 = (unsigned short)(cos_tab[5*i]*(r-2));
     }
 
-    for (i = 0; i < 15; i++)
+    for (i = 0; i < 16; i++)
     {
         d = sin_tab[i];
         m_panalog_clock->h[i] = (unsigned short)(d * h_len);
@@ -148,7 +151,6 @@ void CClockObj::DrawClock(void)
 }
 
 void CClockObj::get_zeiger_value(unsigned short w, const unsigned short *tab_ptr, short *x, short *y){
-
   if (w < 15){
     *x = +tab_ptr[w];
     *y = -tab_ptr[15-w];
@@ -177,7 +179,7 @@ void CClockObj::DrawAnalogClock(void)
     short x, y;
     time_t rawtime;
     struct tm* timeinfo;
-    unsigned short std, min, r;
+    unsigned short std, min, sec, r;
 
     r = m_panalog_clock->radius;
 
@@ -192,25 +194,32 @@ void CClockObj::DrawAnalogClock(void)
         std -= 12;
 
     for(i=0; i<3; i++){
-    gbham( m_iXpos+r + m_panalog_clock->line[i].x1,
-           m_iYpos+r + m_panalog_clock->line[i].y1,
-           m_iXpos+r + m_panalog_clock->line[i].x2,
-           m_iYpos+r + m_panalog_clock->line[i].y2);
-    gbham( m_iXpos+r - m_panalog_clock->line[i].y1,
-           m_iYpos+r + m_panalog_clock->line[i].x1,
-           m_iXpos+r - m_panalog_clock->line[i].y2,
-           m_iYpos+r + m_panalog_clock->line[i].x2);
-    gbham( m_iXpos+r + m_panalog_clock->line[i].y1,
-           m_iYpos+r - m_panalog_clock->line[i].x1,
-           m_iXpos+r + m_panalog_clock->line[i].y2,
-           m_iYpos+r - m_panalog_clock->line[i].x2);
-    gbham( m_iXpos+r - m_panalog_clock->line[i].x1,
-           m_iYpos+r - m_panalog_clock->line[i].y1,
-           m_iXpos+r - m_panalog_clock->line[i].x2,
-           m_iYpos+r - m_panalog_clock->line[i].y2);
+        gbham( m_iXpos+r + m_panalog_clock->line[i].x1,
+               m_iYpos+r + m_panalog_clock->line[i].y1,
+               m_iXpos+r + m_panalog_clock->line[i].x2,
+               m_iYpos+r + m_panalog_clock->line[i].y2);
+        gbham( m_iXpos+r - m_panalog_clock->line[i].y1,
+               m_iYpos+r + m_panalog_clock->line[i].x1,
+               m_iXpos+r - m_panalog_clock->line[i].y2,
+               m_iYpos+r + m_panalog_clock->line[i].x2);
+        gbham( m_iXpos+r + m_panalog_clock->line[i].y1,
+               m_iYpos+r - m_panalog_clock->line[i].x1,
+               m_iXpos+r + m_panalog_clock->line[i].y2,
+               m_iYpos+r - m_panalog_clock->line[i].x2);
+        gbham( m_iXpos+r - m_panalog_clock->line[i].x1,
+               m_iYpos+r - m_panalog_clock->line[i].y1,
+               m_iXpos+r - m_panalog_clock->line[i].x2,
+               m_iYpos+r - m_panalog_clock->line[i].y2);
     }
     get_zeiger_value(min, m_panalog_clock->min, &x, &y);
     gbham(m_iXpos + r, m_iYpos + r, m_iXpos + r+x, m_iYpos + r+y);
+
+    if (m_type == CLOCK_ANALOG_SEC)
+    {
+        sec = timeinfo->tm_sec;
+        get_zeiger_value(sec, m_panalog_clock->s, &x, &y);
+        gbham(m_iXpos + r, m_iYpos + r, m_iXpos + r+x, m_iYpos + r+y);
+    }
 
     std = std * 5;
     while(min >= 12){

@@ -1,4 +1,5 @@
 #include "ctextobj.h"
+#include <stdlib.h>
 
 CTextObj::CTextObj(const struct fbinfo& info)
 : CObject(info)
