@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <list>
+
+#include "initng_list.h"
 
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
@@ -49,7 +50,7 @@ struct posData
     unsigned int ySize;
 };
 
-union objData
+union lstData
 {
     clockData dClock;
     textData dText;
@@ -64,39 +65,35 @@ enum eType {
     GRAPHIC
 };
 
-class objList_node
+struct lstNode
 {
-public:
-    objList_node();
-    objList_node(const objList_node &old);
-    ~objList_node();
+    struct list_head list;
     eType type;
-    objData data;
+    lstData data;
     CObject * obj;
 };
 
-class objList_frame
+struct stFrame
 {
-public:
-    objList_frame();
-    objList_frame(const objList_frame &old);
-    ~objList_frame();
-    std::list<objList_node> * node;
+    lstNode *node;
     unsigned long ulTime;
     unsigned long ulID;
 };
-//methods
-void parseFile(char * xmlName, std::list<objList_frame> * pFrame);
 
-void parseFrame(xmlDocPtr pDoc, xmlNodePtr pNode, objList_frame * pFrame);
-void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, objList_node * pList);
+struct lstIDs
+{
+    struct list_head list;
+    unsigned long int ulID;
+    xmlNodePtr pFrm;
+};
+
+//methods
+long int parseNextFrame(char *xmlName, stFrame *&pFrame);
+xmlNodePtr findNextFrame(xmlDocPtr pDoc, xmlNodePtr pNode, stFrame *pFrame);
+void parseFrameContent(xmlDocPtr pDoc, xmlNodePtr pNode, stFrame *pFrame);
+void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, lstNode *pList);
 eType getType(xmlDocPtr pDoc, xmlNodePtr pNode);
 void getPos(const char * str, posData &dat);
-void sortFrame(std::list<objList_frame> * pFrame);
-bool compareFrames(objList_frame first, objList_frame second);
-void removeFrames(std::list<objList_frame> * pFrame);
-void removeFrames(std::list<objList_frame> * pFrame, std::list<objList_frame>::iterator itExept);
-
-
+void renewObjects(stFrame *pFrame, stFrame *pNewFrame);
 
 #endif

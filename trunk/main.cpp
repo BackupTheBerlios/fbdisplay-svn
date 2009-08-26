@@ -24,48 +24,31 @@ void sighandler(int signum)
     return;
 }
 
+void printNodes(stFrame * pFrameList)
+{
+    struct lstNode *tmp = NULL;
+
+    fprintf(stderr, "\n\tID: %i\tTime: %i\n", pFrameList->ulID, pFrameList->ulTime);
+
+    list_for_each_entry(tmp, &pFrameList->node->list, list)
+    {
+        fprintf(stderr, "pos: %i %i %i %i\ttype: %i\n", tmp->data.dPos.xPos, tmp->data.dPos.yPos, tmp->data.dPos.xSize, tmp->data.dPos.ySize, tmp->type);
+    }
+    return;
+}
+
 int main(int argc, char **argv)
 {
-    std::list<objList_frame> pFrameList;
+    stFrame * pFrameList = NULL;
 
-    parseFile("test.xml", &pFrameList);
-
-//    removeFrames(&pFrameList, ++pFrameList.begin());
-
-    //Check parsed data
-    fprintf(stderr, "Number of Frames: %i\n", pFrameList.size());
-    std::list<objList_frame>::iterator itFrm = pFrameList.begin();
-    std::list<objList_node>::iterator itNode = itFrm->node->begin();
-    while (itFrm != pFrameList.end())
-    {
-        fprintf(stderr, "FrameID: %i\tFrametime: %i\n", itFrm->ulID, itFrm->ulTime);
-        itNode = itFrm->node->begin();
-        while (itNode != itFrm->node->end())
-        {
-            fprintf(stderr, "pos: %i %i %i %i\ttype: %i\n", itNode->data.dPos.xPos, itNode->data.dPos.yPos, itNode->data.dPos.xSize, itNode->data.dPos.ySize, itNode->type);
-            itNode++;
-        }
-        itFrm++;
-    }
-
-    fprintf(stderr,"\nBegin Sort Algorithm\n\n");
-    sortFrame(&pFrameList);
-
-    //Check parsed data
-    fprintf(stderr, "Number of Frames: %i\n", pFrameList.size());
-    itFrm = pFrameList.begin();
-    itNode = itFrm->node->begin();
-    while (itFrm != pFrameList.end())
-    {
-        fprintf(stderr, "FrameID: %i\tFrametime: %i\n", itFrm->ulID, itFrm->ulTime);
-        itNode = itFrm->node->begin();
-        while (itNode != itFrm->node->end())
-        {
-            fprintf(stderr, "pos: %i %i %i %i\ttype: %i\n", itNode->data.dPos.xPos, itNode->data.dPos.yPos, itNode->data.dPos.xSize, itNode->data.dPos.ySize, itNode->type);
-            itNode++;
-        }
-        itFrm++;
-    }
+    parseNextFrame("test.xml", pFrameList);
+    printNodes(pFrameList);
+    parseNextFrame("test.xml", pFrameList);
+    printNodes(pFrameList);
+    parseNextFrame("test.xml", pFrameList);
+    printNodes(pFrameList);
+    parseNextFrame("test.xml", pFrameList);
+    printNodes(pFrameList);
 
     CTextObj* obj, *obj1;
 

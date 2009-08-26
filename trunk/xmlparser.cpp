@@ -1,22 +1,24 @@
 #include "xmlparser.h"
 
-void parseFile(char * xmlName, std::list<objList_frame> * pFrame)
+long int parseNextFrame(char *xmlName, stFrame *&pFrame)
 {
     xmlDocPtr pDoc = NULL;
+    xmlNodePtr pFirstNode = NULL;
     xmlNodePtr pNode = NULL;
+    stFrame * pNewFrame = NULL;
 
-    if (pFrame == NULL)
+    if ((xmlName == NULL) || (strlen(xmlName) == 0))
     {
-        fprintf(stderr, "No list to store\n");
-        return;
+        fprintf(stderr, "No file name\n");
+        return -1;
     }
 
     pDoc = xmlParseFile(xmlName);
 
     if (pDoc == NULL)
     {
-        fprintf(stderr, "Parsing error\n");
-        return;
+        fprintf(stderr, "xmlParseFile error\n");
+        return -1;
     }
 
     pNode = xmlDocGetRootElement(pDoc);
@@ -25,37 +27,125 @@ void parseFile(char * xmlName, std::list<objList_frame> * pFrame)
     {
         fprintf(stderr, "Wrong file type, root node != fbdisplay\n");
         xmlFreeDoc(pDoc);
-        return;
+        return -1;
     }
 
-    pNode = pNode->xmlChildrenNode;
+    pNewFrame = new stFrame;
+    memset(pNewFrame, 0, sizeof(stFrame));
 
-    while (pNode != NULL)
+    pFirstNode = pNode->xmlChildrenNode;
+
+    pNode = findNextFrame(pDoc, pFirstNode, pFrame);
+    parseFrameContent(pDoc, pNode, pNewFrame);
+    renewObjects(pFrame, pNewFrame);
+
+    if (pFrame != NULL)
+    {
+        delete pFrame;
+    }
+    pFrame = pNewFrame;
+    pNewFrame = NULL;
+
+    xmlFreeDoc(pDoc);
+    return 0;
+}
+
+xmlNodePtr findNextFrame(xmlDocPtr pDoc, xmlNodePtr pNode, stFrame *pFrame)
+{
+    xmlNodePtr pFirstNode = pNode, pXmlTmp = NULL, pFrm = NULL;
+    xmlChar *key = NULL;
+    struct list_head *pos = NULL, *q = NULL;
+    lstIDs *pTemp = NULL, *pHigher = NULL, *pSmallest = NULL;
+
+    lstIDs idList;
+    memset(&idList, 0, sizeof(lstIDs));
+    INIT_LIST_HEAD(&idList.list);
+
+    while (pNode != NULL)   //Search all Frame-IDs and store in list
     {
         if ((!xmlStrcmp(pNode->name, (const xmlChar *)"frame")))
         {
-            objList_frame pDummy;
-            pDummy.node = NULL;
-            pDummy.ulID = 0;
-            pDummy.ulTime = 0;
-
-            pFrame->push_back(pDummy);
-
-            parseFrame(pDoc, pNode, &pFrame->back());
+            pFrm = pNode->xmlChildrenNode;
+            while (pFrm != NULL)
+            {
+                if (!xmlStrcmp(pFrm->name, (const xmlChar *)"id"))
+                {
+                    pTemp = new lstIDs;
+                    memset(pTemp, 0, sizeof(lstIDs));
+                    key = xmlNodeListGetString(pDoc, pFrm->xmlChildrenNode, 1);
+                    pTemp->ulID = atol((const char *)key);
+                    pTemp->pFrm = pNode;
+                    xmlFree(key);
+                    list_add(&(pTemp->list), &(idList.list));
+                    pTemp = NULL;
+                    break;
+                }
+                pFrm = pFrm->next;
+            }
         }
+        pFrm = NULL;
         pNode = pNode->next;
     }
 
-    xmlFreeDoc(pDoc);
+    list_for_each_entry(pTemp, &idList.list, list)    //Search next Frame-ID in list
+    {
+        if (pFrame != NULL)
+        {
+            if (pHigher == NULL)
+            {
+                if (pTemp->ulID > pFrame->ulID)
+                {
+                    pHigher = pTemp;
+                }
+            }
+            else if (pHigher->ulID > pTemp->ulID > pFrame->ulID)
+            {
+                pHigher = pTemp;
+            }
+        }
 
-//    sortFrame(pFrame);
+        if (pSmallest == NULL)
+        {
+            pSmallest = pTemp;
+        }
+        else if (pTemp->ulID < pSmallest->ulID)
+        {
+            pSmallest = pTemp;
+        }
+    }
 
-    return;
+    if (pHigher != NULL)
+    {
+        pXmlTmp = pHigher->pFrm;
+    }
+    else if (pSmallest != NULL)
+    {
+        pXmlTmp = pSmallest->pFrm;
+    }
+    else
+    {
+        return NULL;
+    }
+
+    pHigher = NULL;
+    pSmallest = NULL;
+    pTemp = NULL;
+
+    list_for_each_safe(pos, q, &idList.list)    //Clear list
+    {
+        pTemp = list_entry(pos, struct lstIDs, list);
+        list_del(pos);
+        delete pTemp;
+        pTemp = NULL;
+    }
+
+    return pXmlTmp;
 }
 
-void parseFrame(xmlDocPtr pDoc, xmlNodePtr pNode, objList_frame * pFrame)
+void parseFrameContent(xmlDocPtr pDoc, xmlNodePtr pNode, stFrame *pFrame)
 {
-    xmlChar * key = NULL;
+    xmlChar *key = NULL;
+    lstNode *pTemp = NULL;
 
     pNode = pNode->xmlChildrenNode;
 
@@ -63,19 +153,19 @@ void parseFrame(xmlDocPtr pDoc, xmlNodePtr pNode, objList_frame * pFrame)
     {
         if (!xmlStrcmp(pNode->name, (const xmlChar *)"object"))
         {
-            objList_node pDummy;;
-
+            pTemp = new lstNode;
+            memset(pTemp, 0, sizeof(lstNode));
             if (pFrame->node == NULL)
             {
-                pFrame->node = new std::list<objList_node>;
+                pFrame->node = new lstNode;
+                INIT_LIST_HEAD(&pFrame->node->list);
             }
-
-            pDummy.obj = NULL;
-            pDummy.type = NOTVALID;
-            memset(&pDummy.data, 0, sizeof(objData));
-            pFrame->node->push_back(pDummy);
-
-            parseObject(pDoc, pNode, &pFrame->node->back());
+            pTemp->obj = NULL;
+            pTemp->type = NOTVALID;
+            memset(&pTemp->data, 0, sizeof(lstData));
+            parseObject(pDoc, pNode, pTemp);
+            list_add(&(pTemp->list), &(pFrame->node->list));
+            pTemp = NULL;
         }
         else if (!xmlStrcmp(pNode->name, (const xmlChar *)"time"))
         {
@@ -94,12 +184,13 @@ void parseFrame(xmlDocPtr pDoc, xmlNodePtr pNode, objList_frame * pFrame)
     return;
 }
 
-void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, objList_node * pList)
+void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, lstNode *pList)
 {
-    xmlChar * key = NULL;
+    xmlChar *key = NULL;
     pNode = pNode->xmlChildrenNode;
 
     pList->type = getType(pDoc, pNode);
+
     switch (pList->type)
     {
     case GRAPHIC:
@@ -186,6 +277,7 @@ void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, objList_node * pList)
     default:
         break;
     }
+
     return;
 }
 
@@ -233,134 +325,7 @@ void getPos(const char * str, posData &dat)
     return;
 }
 
-void sortFrame(std::list<objList_frame> * pFrame)
+void renewObjects(stFrame *pFrame, stFrame *pNewFrame)
 {
-    if (pFrame == NULL)
-    {
-        return;
-    }
-
-    pFrame->sort(compareFrames);
-    return;
-}
-
-bool compareFrames(objList_frame first, objList_frame second)
-{
-    if (first.ulID < second.ulID)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-void removeFrames(std::list<objList_frame> * pFrame)
-{
-    pFrame->clear();
-    return;
-}
-
-void removeFrames(std::list<objList_frame> * pFrame, std::list<objList_frame>::iterator itExept)
-{
-    std::list<objList_frame>::iterator itBegin;
-    std::list<objList_frame>::iterator itEnd;
-
-    itEnd = pFrame->end();
-    itEnd--;
-    if (itExept != itEnd)
-    {
-        itBegin = itExept;
-        itBegin++;
-        itEnd = pFrame->end();
-        pFrame->erase(itBegin, itEnd);
-    }
-    itBegin = pFrame->begin();
-    if (itExept != itBegin)
-    {
-        itEnd = itExept;
-        pFrame->erase(itBegin,itEnd);
-    }
-
-    return;
-}
-
-objList_node::objList_node()
-{
-    type = NOTVALID;
-    memset(&data, 0, sizeof(objData));
-    obj = NULL;
-    return;
-}
-
-objList_node::objList_node(const objList_node &old)
-{
-    type = old.type;
-    memcpy(&data, &old.data, sizeof(objData));
-    obj = old.obj;
-    fprintf(stderr, "obj: %p\t old.obj: %p\n", obj, old.obj);
-    return;
-}
-
-objList_node::~objList_node()
-{
-    if (type == TEXT)
-    {
-        if (data.dText.text != NULL)
-        {
-            delete data.dText.text;
-            data.dText.text = NULL;
-        }
-    }
-    else if (type == GRAPHIC)
-    {
-        if (data.dGraphic.text != NULL)
-        {
-            delete data.dGraphic.text;
-            data.dGraphic.text = NULL;
-        }
-    }
-
-    if (obj != NULL)
-    {
-        fprintf(stderr, "delete obj: %p\n", obj);
-        delete obj;
-        obj = NULL;
-    }
-
-    return;
-}
-
-objList_frame::objList_frame()
-{
-    node = NULL;
-    ulID = 0;
-    ulTime = 0;
-    return;
-}
-
-objList_frame::objList_frame(const objList_frame &old)
-{
-    node = new std::list<objList_node>;
-    if ((old.node != NULL) && (old.node->size() > 0))
-    {
-        for (std::list<objList_node>::iterator it = old.node->begin(); it != old.node->end();)
-        {
-            node->insert(node->end(), it, ++it);
-        }
-    }
-    ulID = old.ulID;
-    ulTime = old.ulTime;
-    return;
-}
-
-
-objList_frame::~objList_frame()
-{
-    if (node != NULL)
-    {
-        delete node;
-        node = NULL;
-    }
     return;
 }
