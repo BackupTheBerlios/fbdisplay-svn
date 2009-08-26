@@ -3,17 +3,20 @@
     <id>100</id>
     <time>600</time>
     <object>
+      <id>4711</id>
       <type>clock</type>
       <pos>0,0,100,100</pos>
       <clocktype>analog_sec</clocktype>
     </object>
     <object>
+      <id>42</id>
       <type>text</type>
       <pos>0,120,100,20</pos>
       <speed>10</speed>
       <data>Dies ist ein Test, hier stehen mehrere Sachen</data>
     </object>
     <object>
+      <id>8</id>
       <type>graphic</type>
       <pos>150,0,150,150</pos>
       <path>~/bilder/BSO_Logo_small.bmp</path>
@@ -23,21 +26,37 @@
     <id>10</id>
     <time>300</time>
     <object>
+      <id>500</id>
       <type>graphic</type>
       <pos>0,0,400,200</pos>
       <path>~/bilder/BSO_Logo.jpeg</path>
+    </object>
+    <object>
+      <id>42</id>
+      <type>text</type>
+      <pos>0,120,100,20</pos>
+      <speed>10</speed>
+      <data>Dies ist ein Test, hier stehen mehrere Sachen</data>
     </object>
   </frame>
   <frame>
     <id>1</id>
     <time>3000</time>
     <object>
+      <id>70</id>
       <type>text</type>
       <pos>800,90,4711,1982</pos>
       <speed>-100</speed>
       <data>was weiss denn ich was ich da tippen soll?
 mal sehen wie das mit zeilenumbruch
 so ausschaut</data>
+    </object>
+    <object>
+      <id>42</id>
+      <type>text</type>
+      <pos>0,120,100,20</pos>
+      <speed>10</speed>
+      <data>Dies ist ein Test, hier stehen mehrere Sachen</data>
     </object>
   </frame>
 </fbdisplay>
