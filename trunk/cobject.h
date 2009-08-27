@@ -3,12 +3,14 @@
 
 #include <sys/time.h>
 #include <string>
+#include <linux/fb.h>
 using namespace std;
 
 struct fbinfo {
     unsigned char* pFB;
-    unsigned int xres;
-    unsigned int yres;
+    struct fb_var_screeninfo* var;
+    struct fb_fix_screeninfo* fix;
+    size_t size;
 };
 
 class CObject

@@ -30,7 +30,7 @@
 #define min(x,y) ((x) < (y) ? (x) : (y))
 #endif
 
-int fh_png_id(char *name)
+int png_id(char *name)
 {
     int fd;
     char id[4];
@@ -42,7 +42,7 @@ int fh_png_id(char *name)
 }
 
 
-int fh_png_load(char *name,unsigned char *buffer, unsigned char ** alpha,int x,int y)
+int png_load(char *name,unsigned char *buffer, unsigned char ** alpha,int x,int y)
 {
     png_structp png_ptr;
     png_infop info_ptr;
@@ -138,7 +138,7 @@ int fh_png_load(char *name,unsigned char *buffer, unsigned char ** alpha,int x,i
     fclose(fh);
     return 0;
 }
-int fh_png_getsize(char *name,int *x,int *y)
+int png_getsize(char *name,int *x,int *y)
 {
     png_structp png_ptr;
     png_infop info_ptr;

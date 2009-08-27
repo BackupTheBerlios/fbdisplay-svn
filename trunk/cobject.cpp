@@ -41,12 +41,15 @@ void CObject::GetSize(unsigned int& x, unsigned int& y)
 
 void CObject::SetPixel(unsigned int x, unsigned int y, unsigned char color)
 {
-    unsigned long  ulOffset = y * m_fbinfo.xres + x;
+    if (y < m_fbinfo.var->yres && x < m_fbinfo.var->xres)
+    {
+        unsigned long  ulOffset = y * m_fbinfo.var->xres + x;
 
-    if(color > 0)
-      color = 0xff;
+        if(color > 0)
+          color = 0xff;
 
-    m_fbinfo.pFB[ulOffset] = color;
+        m_fbinfo.pFB[ulOffset] = color;
+    }
     return;
 }
 

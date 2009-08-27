@@ -15,6 +15,7 @@
 
 #include "ctextobj.h"
 #include "cclockobj.h"
+#include "cgraphicobj.h"
 
 #include "xmlparser.h"
 
@@ -62,10 +63,13 @@ int main(int argc, char **argv)
 
     ioctl(fh, FBIOGET_VSCREENINFO, &var);
 
-    info.xres = var.xres;
-    info.yres = var.yres;
+    info.var = new struct fb_var_screeninfo;
+    ioctl(fh, FBIOGET_VSCREENINFO, info.var);
+    info.fix = new struct fb_fix_screeninfo;
+    ioctl(fh, FBIOGET_FSCREENINFO, info.fix);
+    info.size = info.var->xres * info.var->yres;
 
-    info.pFB = (unsigned char*)mmap(NULL, info.xres*info.yres, PROT_WRITE | PROT_READ, MAP_SHARED, fh, 0);
+    info.pFB = (unsigned char*)mmap(NULL, info.size, PROT_WRITE | PROT_READ, MAP_SHARED, fh, 0);
 
     if (info.pFB==MAP_FAILED)
     {
@@ -76,7 +80,7 @@ int main(int argc, char **argv)
     printf("\033[?25l"); // Cursor ausschalten
     fflush(stdout);
 
-    memset(info.pFB, 0x00, info.xres*info.yres);
+    memset(info.pFB, 0x00, info.size);
 
     obj = new CTextObj(info);
     obj->SetPos(20,30);

@@ -8,6 +8,7 @@ CClockObj::CClockObj(const struct fbinfo& info)
 : CObject(info)
 {
     m_type = CLOCK_ANALOG_SEC;
+    m_panalog_clock = NULL;
 }
 
 CClockObj::~CClockObj()
@@ -19,7 +20,7 @@ CClockObj::~CClockObj()
     }
 }
 
-bool CClockObj::Init(void)
+bool CClockObj::Init()
 {
     timeval ts;
     gettimeofday(&ts,0);
