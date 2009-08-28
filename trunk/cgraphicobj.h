@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include "string.h"
 
+#pragma once
+
 enum eGraphicType {
     GRAPHIC_BMP,
     GRAPHIC_PNG

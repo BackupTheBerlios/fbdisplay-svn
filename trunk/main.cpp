@@ -29,11 +29,12 @@ void printNodes(stFrame * pFrameList)
 {
     struct lstNode *tmp = NULL;
 
-    fprintf(stderr, "\n\tID: %i\tTime: %i\n", pFrameList->ulID, pFrameList->ulTime);
+    fprintf(stderr, "ID: %u\tTime: %u\n", pFrameList->ulID, pFrameList->ulTime);
 
     list_for_each_entry(tmp, &pFrameList->node->list, list)
     {
-        fprintf(stderr, "pos: %i %i %i %i\ttype: %i\n", tmp->data.dPos.xPos, tmp->data.dPos.yPos, tmp->data.dPos.xSize, tmp->data.dPos.ySize, tmp->type);
+        fprintf(stderr, "pos: %u %u %u %u\ttype: %u\n", tmp->data.dPos.xPos, tmp->data.dPos.yPos, tmp->data.dPos.xSize, tmp->data.dPos.ySize, tmp->type);
+        fprintf(stderr, "id: %u\tobjPtr: %p\n", tmp->data.dPos.id, tmp->obj);
     }
     return;
 }
@@ -41,21 +42,13 @@ void printNodes(stFrame * pFrameList)
 int main(int argc, char **argv)
 {
     stFrame * pFrameList = NULL;
-
-    parseNextFrame("test.xml", pFrameList);
-    printNodes(pFrameList);
-    parseNextFrame("test.xml", pFrameList);
-    printNodes(pFrameList);
-    parseNextFrame("test.xml", pFrameList);
-    printNodes(pFrameList);
-    parseNextFrame("test.xml", pFrameList);
-    printNodes(pFrameList);
-
-    CTextObj* obj, *obj1;
+    lstNode *pEntry = NULL;
 
     int fh;
     struct fbinfo info;
     struct fb_var_screeninfo var;
+
+    unsigned long ulTimer = 0, ulTimeNext = 0;
 
     signal(SIGHUP, sighandler);
 
@@ -82,44 +75,32 @@ int main(int argc, char **argv)
 
     memset(info.pFB, 0x00, info.size);
 
-    obj = new CTextObj(info);
-    obj->SetPos(20,30);
-    obj->SetSize(100, 8);
-    string test = "Hallo Welt!";
-    obj->Init(test, 20);
-
-    obj1 = new CTextObj(info);
-    obj1->SetPos(75,3);
-    obj1->SetSize(74, 8);
-    string test1 = "test test!!";
-    obj1->Init(test1, 75);
-
-    CClockObj* obj3 = new CClockObj(info);
-    obj3->SetPos(123,14);
-    obj3->SetSize(60, 60);
-    obj3->Init();
-
-    CTextObj* obj4 = new CTextObj(info);
-    obj4->SetPos(28,100);
-    obj4->SetSize(200, 8);
-    string test4 = "Test rueckwaerts";
-    obj4->Init(test4, -75);
-
-    CObject* o = obj;
+    parseNextFrame("test.xml", pFrameList, &info);
+    ulTimeNext = ulTimer + pFrameList->ulTime * 1000;
     while(1)
     {
-        o->Refresh();
-        obj3->Refresh();
-        obj1->Refresh();
-        obj4->Refresh();
+        if (ulTimer > ulTimeNext)
+        {
+            parseNextFrame("test.xml", pFrameList, &info);
+            fprintf(stderr, "\nBilddauer in sec: %u\n", pFrameList->ulTime);
+            printNodes(pFrameList);
+            ulTimeNext = ulTimer + pFrameList->ulTime * 1000;
+        }
+
+        list_for_each_entry(pEntry, &pFrameList->node->list, list)
+        {
+            if (pEntry->obj != NULL)
+            {
+                pEntry->obj->Refresh();
+            }
+        }
 
         struct timespec ts;
         ts.tv_sec = 0;
         ts.tv_nsec = 1000000;
         nanosleep(&ts, NULL);
+        ++ulTimer;
     }
-
-    delete obj;
 
     return 0;
 }

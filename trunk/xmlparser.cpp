@@ -1,6 +1,6 @@
 #include "xmlparser.h"
 
-long int parseNextFrame(char *xmlName, stFrame *&pFrame)
+long int parseNextFrame(char *xmlName, stFrame *&pFrame, fbinfo *info)
 {
     xmlDocPtr pDoc = NULL;
     xmlNodePtr pFirstNode = NULL;
@@ -37,7 +37,7 @@ long int parseNextFrame(char *xmlName, stFrame *&pFrame)
 
     pNode = findNextFrame(pDoc, pFirstNode, pFrame);
     parseFrameContent(pDoc, pNode, pNewFrame);
-    renewObjects(pFrame, pNewFrame);
+    renewObjects(pFrame, pNewFrame, info);
 
     if (pFrame != NULL)
     {
@@ -203,10 +203,16 @@ void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, lstNode *pList)
                 getPos((const char *)key, pList->data.dPos);
                 xmlFree(key);
             }
+            else if (!xmlStrcmp(pNode->name, (const xmlChar *)"id"))
+            {
+                key = xmlNodeListGetString(pDoc, pNode->xmlChildrenNode, 1);
+                pList->data.dGraphic.id = atoi((const char *)key);
+                xmlFree(key);
+            }
             else if (!xmlStrcmp(pNode->name, (const xmlChar *)"path"))
             {
                 key = xmlNodeListGetString(pDoc, pNode->xmlChildrenNode, 1);
-                pList->data.dGraphic.text = new string((const char *)key);
+                pList->data.dGraphic.path = new string((const char *)key);
                 xmlFree(key);
             }
             pNode = pNode->next;
@@ -221,6 +227,12 @@ void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, lstNode *pList)
             {
                 key=xmlNodeListGetString(pDoc, pNode->xmlChildrenNode, 1);
                 getPos((const char *)key, pList->data.dPos);
+                xmlFree(key);
+            }
+            else if (!xmlStrcmp(pNode->name, (const xmlChar *)"id"))
+            {
+                key = xmlNodeListGetString(pDoc, pNode->xmlChildrenNode, 1);
+                pList->data.dClock.id = atoi((const char *)key);
                 xmlFree(key);
             }
             else if (!xmlStrcmp(pNode->name, (const xmlChar *)"clocktype"))
@@ -256,6 +268,12 @@ void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, lstNode *pList)
             {
                 key=xmlNodeListGetString(pDoc, pNode->xmlChildrenNode, 1);
                 getPos((const char *)key, pList->data.dPos);
+                xmlFree(key);
+            }
+            else if (!xmlStrcmp(pNode->name, (const xmlChar *)"id"))
+            {
+                key = xmlNodeListGetString(pDoc, pNode->xmlChildrenNode, 1);
+                pList->data.dText.id = atoi((const char *)key);
                 xmlFree(key);
             }
             else if (!xmlStrcmp(pNode->name, (const xmlChar *)"speed"))
@@ -325,7 +343,127 @@ void getPos(const char * str, posData &dat)
     return;
 }
 
-void renewObjects(stFrame *pFrame, stFrame *pNewFrame)
+void renewObjects(stFrame *pFrame, stFrame *pNewFrame, fbinfo *info)
 {
+    lstNode *pFrmTemp = NULL, *pFrmTempOld = NULL;
+    struct list_head *pos = NULL, *q = NULL;
+
+    //Search existent objects
+    if ((pFrame != NULL) && (pFrame->node != NULL))
+    {
+        list_for_each_entry(pFrmTemp, &pNewFrame->node->list, list)
+        {
+            list_for_each_entry(pFrmTempOld, &pFrame->node->list, list)
+            {
+                if ((pFrmTemp->type == pFrmTempOld->type) &&
+                    (pFrmTemp->data.dPos.id == pFrmTempOld->data.dPos.id) &&
+                    (pFrmTemp->data.dPos.xPos == pFrmTempOld->data.dPos.xPos) &&
+                    (pFrmTemp->data.dPos.yPos == pFrmTempOld->data.dPos.yPos) &&
+                    (pFrmTemp->data.dPos.xSize == pFrmTempOld->data.dPos.xSize) &&
+                    (pFrmTemp->data.dPos.ySize == pFrmTempOld->data.dPos.ySize))
+                {
+                    if(pFrmTemp->type == GRAPHIC)
+                    {
+                        if (pFrmTemp->data.dGraphic.path->compare(*pFrmTempOld->data.dGraphic.path) == 0)
+                        {
+                            break;
+                        }
+                    }
+                    else if (pFrmTemp->type == TEXT)
+                    {
+                        if ((pFrmTemp->data.dText.speed == pFrmTempOld->data.dText.speed) &&
+                            (pFrmTemp->data.dText.text->compare(*pFrmTempOld->data.dText.text) == 0))
+                        {
+                            break;
+                        }
+                    }
+                    else if (pFrmTemp->type == CLOCK)
+                    {
+                        if (pFrmTemp->data.dClock.type == pFrmTempOld->data.dClock.type)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (&pFrmTempOld->list != (&pFrame->node->list))
+            {
+                pFrmTemp->obj = pFrmTempOld->obj;
+                pFrmTempOld->obj = NULL;
+            }
+
+        }
+
+        //delete current
+        list_for_each_safe(pos, q, &pFrame->node->list)
+        {
+            pFrmTemp = list_entry(pos, struct lstNode, list);
+            list_del(pos);
+            if (pFrmTemp->obj != NULL)
+            {
+                switch (pFrmTemp->type)
+                {
+                case GRAPHIC:
+                    delete ((CGraphicObj *)(pFrmTemp->obj));
+                    break;
+                case TEXT:
+                    delete ((CTextObj *)(pFrmTemp->obj));
+                    break;
+                case CLOCK:
+                    delete ((CClockObj *)(pFrmTemp->obj));
+                    break;
+                default:
+                    delete pFrmTemp->obj;
+                    break;
+                }
+
+            }
+            pFrmTemp->obj = NULL;
+            if ((pFrmTemp->type == TEXT) && (pFrmTemp->data.dText.text != NULL))
+            {
+                delete pFrmTemp->data.dText.text;
+                pFrmTemp->data.dText.text = NULL;
+            }
+            else if ((pFrmTemp->type == GRAPHIC) && (pFrmTemp->data.dGraphic.path != NULL))
+            {
+                delete pFrmTemp->data.dGraphic.path;
+                pFrmTemp->data.dGraphic.path = NULL;
+            }
+            delete pFrmTemp;
+            pFrmTemp = NULL;
+        }
+    }
+
+    //konstruct new
+    list_for_each_entry(pFrmTemp, &pNewFrame->node->list, list)
+    {
+        if (pFrmTemp->obj == NULL)
+        {
+            switch (pFrmTemp->type)
+            {
+            case GRAPHIC:
+                pFrmTemp->obj = new CGraphicObj(*info);
+                ((CGraphicObj *)(pFrmTemp->obj))->SetPos(pFrmTemp->data.dGraphic.xPos,pFrmTemp->data.dGraphic.yPos);
+                ((CGraphicObj *)(pFrmTemp->obj))->SetSize(pFrmTemp->data.dGraphic.xSize, pFrmTemp->data.dGraphic.ySize);
+                ((CGraphicObj *)(pFrmTemp->obj))->Init(*pFrmTemp->data.dGraphic.path);
+                break;
+            case TEXT:
+                pFrmTemp->obj = new CTextObj(*info);
+                ((CTextObj *)(pFrmTemp->obj))->SetPos(pFrmTemp->data.dText.xPos,pFrmTemp->data.dText.yPos);
+                ((CTextObj *)(pFrmTemp->obj))->SetSize(pFrmTemp->data.dText.xSize, pFrmTemp->data.dText.ySize);
+                ((CTextObj *)(pFrmTemp->obj))->Init(*pFrmTemp->data.dText.text, pFrmTemp->data.dText.speed);
+                break;
+            case CLOCK:
+                pFrmTemp->obj = new CClockObj(*info);
+                ((CClockObj *)(pFrmTemp->obj))->SetPos(pFrmTemp->data.dClock.xPos,pFrmTemp->data.dClock.yPos);
+                ((CClockObj *)(pFrmTemp->obj))->SetSize(pFrmTemp->data.dClock.xSize, pFrmTemp->data.dClock.ySize);
+                ((CClockObj *)(pFrmTemp->obj))->SetClockType(pFrmTemp->data.dClock.type);
+                ((CClockObj *)(pFrmTemp->obj))->Init();
+                break;
+            default:
+                break;
+            }
+        }
+    }
     return;
 }

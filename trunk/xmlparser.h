@@ -1,5 +1,5 @@
-#ifndef __XML_PARSER_H
-#define __XML_PARSER_H
+#ifndef __FBDISPLAY_XML_PARSER_H
+#define __FBDISPLAY_XML_PARSER_H
 
 #include <stdio.h>
 #include <string.h>
@@ -12,10 +12,13 @@
 
 #include "cobject.h"
 #include "cclockobj.h"
+#include "cgraphicobj.h"
+#include "ctextobj.h"
 
 //structs
 struct clockData
 {
+    unsigned long id;
     unsigned int xPos;
     unsigned int yPos;
     unsigned int xSize;
@@ -25,6 +28,7 @@ struct clockData
 
 struct textData
 {
+    unsigned long id;
     unsigned int xPos;
     unsigned int yPos;
     unsigned int xSize;
@@ -35,15 +39,17 @@ struct textData
 
 struct graphicData
 {
+    unsigned long id;
     unsigned int xPos;
     unsigned int yPos;
     unsigned int xSize;
     unsigned int ySize;
-    string * text;
+    string * path;
 };
 
 struct posData
 {
+    unsigned long id;
     unsigned int xPos;
     unsigned int yPos;
     unsigned int xSize;
@@ -88,12 +94,12 @@ struct lstIDs
 };
 
 //methods
-long int parseNextFrame(char *xmlName, stFrame *&pFrame);
+long int parseNextFrame(char *xmlName, stFrame *&pFrame, fbinfo *info);
 xmlNodePtr findNextFrame(xmlDocPtr pDoc, xmlNodePtr pNode, stFrame *pFrame);
 void parseFrameContent(xmlDocPtr pDoc, xmlNodePtr pNode, stFrame *pFrame);
 void parseObject(xmlDocPtr pDoc, xmlNodePtr pNode, lstNode *pList);
 eType getType(xmlDocPtr pDoc, xmlNodePtr pNode);
 void getPos(const char * str, posData &dat);
-void renewObjects(stFrame *pFrame, stFrame *pNewFrame);
+void renewObjects(stFrame *pFrame, stFrame *pNewFrame, fbinfo *info);
 
 #endif

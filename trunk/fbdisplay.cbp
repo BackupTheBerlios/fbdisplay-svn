@@ -30,7 +30,7 @@
 					<Add directory="/usr/include/libxml2/" />
 				</Compiler>
 				<Linker>
-					<Add library="/usr/lib64/libxml2.so" />
+					<Add library="/usr/lib64/libxml2.a" />
 				</Linker>
 			</Target>
 		</Build>

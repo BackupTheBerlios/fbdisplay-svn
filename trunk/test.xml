@@ -1,7 +1,7 @@
 <fbdisplay>
   <frame>
     <id>100</id>
-    <time>600</time>
+    <time>2</time>
     <object>
       <id>4711</id>
       <type>clock</type>
@@ -18,13 +18,13 @@
     <object>
       <id>8</id>
       <type>graphic</type>
-      <pos>150,0,150,150</pos>
+      <pos>150,0,100,100</pos>
       <path>~/bilder/BSO_Logo_small.bmp</path>
     </object>
-  </frame>    
+  </frame>
   <frame>
     <id>10</id>
-    <time>300</time>
+    <time>1</time>
     <object>
       <id>500</id>
       <type>graphic</type>
@@ -41,7 +41,7 @@
   </frame>
   <frame>
     <id>1</id>
-    <time>3000</time>
+    <time>3</time>
     <object>
       <id>70</id>
       <type>text</type>
