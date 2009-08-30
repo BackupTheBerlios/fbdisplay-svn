@@ -1,3 +1,6 @@
+#ifndef __CGRAPHICOBJECT_H__
+#define __CGRAPHICOBJECT_H__
+
 #include "cobject.h"
 #include "bmp.h"
 #include "png.h"
@@ -5,8 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "string.h"
-
-#pragma once
 
 enum eGraphicType {
     GRAPHIC_BMP,
@@ -27,6 +28,7 @@ private:
     struct image m_i;
 public:
     CGraphicObj(const struct fbinfo& info);
+    ~CGraphicObj();
     bool Init(string& path);
     bool Refresh(void);
     bool FitToArea();
@@ -65,3 +67,4 @@ inline static unsigned char make8grayscale(unsigned char r, unsigned char g, uns
     return (0xff - (r+g+b)/3);
 }
 
+#endif

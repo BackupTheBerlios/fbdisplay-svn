@@ -43,12 +43,16 @@ void CObject::SetPixel(unsigned int x, unsigned int y, unsigned char color)
 {
     if (y < m_fbinfo.var->yres && x < m_fbinfo.var->xres)
     {
-        unsigned long  ulOffset = y * m_fbinfo.var->xres + x;
+        unsigned long  ulOffset = y * m_fbinfo.var->xres * m_fbinfo.cpp + x * m_fbinfo.cpp;
 
         if(color > 0)
           color = 0xff;
 
         m_fbinfo.pFB[ulOffset] = color;
+        if (m_fbinfo.cpp >= 2)
+            m_fbinfo.pFB[ulOffset++] = color;
+        if (m_fbinfo.cpp == 4)
+            m_fbinfo.pFB[ulOffset++] = color;
     }
     return;
 }

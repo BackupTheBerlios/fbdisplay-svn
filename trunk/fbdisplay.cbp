@@ -13,9 +13,14 @@
 				<Option type="1" />
 				<Option compiler="arm9tdmilinuxgnu_gcc_compiler" />
 				<Compiler>
+					<Add option="-w" />
 					<Add option="-g" />
 					<Add directory="../libjpeg-6b" />
+					<Add directory="/usr/arm-9tdmi-linux-gnu/usr/include/libxml2" />
 				</Compiler>
+				<Linker>
+					<Add library="libxml2.a" />
+				</Linker>
 			</Target>
 			<Target title="Release x86">
 				<Option output="fbdisplay" prefix_auto="1" extension_auto="1" />
@@ -30,7 +35,23 @@
 					<Add directory="/usr/include/libxml2/" />
 				</Compiler>
 				<Linker>
-					<Add library="/usr/lib64/libxml2.a" />
+					<Add library="libxml2.a" />
+				</Linker>
+			</Target>
+			<Target title="Release FriendlyARM">
+				<Option output="fbdisplay" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="./bin/Release" />
+				<Option object_output="/home/daniel/work/ledfb/fbdisplay/.objs" />
+				<Option type="1" />
+				<Option compiler="armnonelinuxgnueabi_gcc_compiler" />
+				<Compiler>
+					<Add option="-w" />
+					<Add option="-g" />
+					<Add directory="../libjpeg-6b" />
+					<Add directory="/usr/arm-none-linux-gnueabi/usr/include/libxml2" />
+				</Compiler>
+				<Linker>
+					<Add library="libxml2.a" />
 				</Linker>
 			</Target>
 		</Build>
@@ -62,6 +83,9 @@
 			<code_completion />
 			<debugger>
 				<remote_debugging target="Release ARM">
+					<options conn_type="0" serial_baud="115200" ip_address="192.168.202.111" ip_port="4711" additional_cmds_before="shell cp ./fbdisplay /mnt/rootfs/bin/&#x0A;shell ./startdebug &amp;&#x0A;shell sleep 2" />
+				</remote_debugging>
+				<remote_debugging target="Release FriendlyARM">
 					<options conn_type="0" serial_baud="115200" ip_address="192.168.202.111" ip_port="4711" additional_cmds_before="shell cp ./fbdisplay /mnt/rootfs/bin/&#x0A;shell ./startdebug &amp;&#x0A;shell sleep 2" />
 				</remote_debugging>
 			</debugger>

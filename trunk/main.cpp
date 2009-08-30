@@ -60,7 +60,25 @@ int main(int argc, char **argv)
     ioctl(fh, FBIOGET_VSCREENINFO, info.var);
     info.fix = new struct fb_fix_screeninfo;
     ioctl(fh, FBIOGET_FSCREENINFO, info.fix);
-    info.size = info.var->xres * info.var->yres;
+
+    switch(info.var->bits_per_pixel)
+    {
+    case 8:
+        info.cpp = 1;
+        break;
+    case 15:
+    case 16:
+        info.cpp = 2;
+        break;
+    case 24:
+    case 32:
+        info.cpp = 4;
+        break;
+    default:
+        break;
+    }
+
+    info.size = info.var->xres * info.var->yres * info.cpp;
 
     info.pFB = (unsigned char*)mmap(NULL, info.size, PROT_WRITE | PROT_READ, MAP_SHARED, fh, 0);
 

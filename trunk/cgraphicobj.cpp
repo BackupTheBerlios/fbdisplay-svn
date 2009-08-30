@@ -6,6 +6,20 @@ CGraphicObj::CGraphicObj(const struct fbinfo& info)
 
 }
 
+CGraphicObj::~CGraphicObj()
+{
+    if (m_i.rgb)
+    {
+        delete[] m_i.rgb;
+        m_i.rgb = NULL;
+    }
+    if (m_i.alpha)
+    {
+        delete[] m_i.alpha;
+        m_i.alpha = NULL;
+    }
+}
+
 bool CGraphicObj::Init(string& path)
 {
     char filename[500];
@@ -105,43 +119,38 @@ bool CGraphicObj::Show()
         unsigned long* pl;
     } ptr;
     unsigned char* fbptr;
-    unsigned char cpp;  // Bytes per Pixel
 
     switch(m_fbinfo.var->bits_per_pixel)
     {
 	case 8:
-        cpp = 1;
 	    ptr.pc = new unsigned char[m_i.width*m_i.height];
 	    for(i = 0; i < m_i.width*m_i.height; i++)
 		ptr.pc[i] = make8grayscale(m_i.rgb[i*3], m_i.rgb[i*3+1], m_i.rgb[i*3+2]);
 	    break;
 	case 15:
-        cpp = 2;
 	    ptr.ps = new unsigned short[m_i.width*m_i.height];
 	    for(i = 0; i < m_i.width*m_i.height ; i++)
 		ptr.ps[i] = make15color(m_i.rgb[i*3], m_i.rgb[i*3+1], m_i.rgb[i*3+2]);
 	    break;
 	case 16:
-        cpp = 2;
 	    ptr.ps = new unsigned short[m_i.width*m_i.height];
 	    for(i = 0; i < m_i.width*m_i.height ; i++)
 		ptr.ps[i] = make16color(m_i.rgb[i*3], m_i.rgb[i*3+1], m_i.rgb[i*3+2]);
 	    break;
 	case 24:
 	case 32:
-        cpp = 4;
         ptr.pl = new unsigned long[m_i.width*m_i.height];
 	    for(i = 0; i < m_i.width*m_i.height ; i++)
-		ptr.pl[i] =  ((m_i.rgb[i*3] << 16) & 0xFF0000) |
+		ptr.pl[i] = ((m_i.rgb[i*3] << 16) & 0xFF0000) |
                     ((m_i.rgb[i*3+1] << 8) & 0xFF00) |
-                    (m_i.rgb[i*3+2] & 0xFF);
+                     (m_i.rgb[i*3+2] & 0xFF);
 	    break;
 	default:
 	    fprintf(stderr, "Unsupported video mode! You've got: %dbpp\n", m_fbinfo.var->bits_per_pixel);
 	    exit(1);
     }
 
-	fbptr = m_fbinfo.pFB + (m_iYpos * m_fbinfo.var->xres + m_iXpos) * cpp;
+	fbptr = m_fbinfo.pFB + (m_iYpos * m_fbinfo.var->xres + m_iXpos) * m_fbinfo.cpp;
 /*
 	if(m_i.alpha)
 	{
@@ -184,8 +193,8 @@ bool CGraphicObj::Show()
 	}
 	else
 	*/
-	    for(i = 0; i < m_i.height; i++, fbptr += m_fbinfo.var->xres * cpp, ptr.pc += m_i.width * cpp)
-			memcpy(fbptr, ptr.pc, m_i.width * cpp);
+	    for(i = 0; i < m_i.height; i++, fbptr += m_fbinfo.var->xres * m_fbinfo.cpp, ptr.pc += m_i.width * m_fbinfo.cpp)
+			memcpy(fbptr, ptr.pc, m_i.width * m_fbinfo.cpp);
     return true;
 }
 
@@ -196,7 +205,7 @@ bool CGraphicObj::Refresh(void)
 }
 
 
-unsigned char * simple_resize(unsigned char * orgin,int ox,int oy,int dx,int dy)
+unsigned char* simple_resize(unsigned char* orgin,int ox,int oy,int dx,int dy)
 {
     unsigned char *cr,*p,*l;
     int i,j,k,ip;
@@ -217,7 +226,7 @@ unsigned char * simple_resize(unsigned char * orgin,int ox,int oy,int dx,int dy)
     return(cr);
 }
 
-unsigned char * alpha_resize(unsigned char * alpha,int ox,int oy,int dx,int dy)
+unsigned char* alpha_resize(unsigned char* alpha,int ox,int oy,int dx,int dy)
 {
     unsigned char *cr,*p,*l;
     int i,j,k;

@@ -10,6 +10,7 @@ struct fbinfo {
     unsigned char* pFB;
     struct fb_var_screeninfo* var;
     struct fb_fix_screeninfo* fix;
+    unsigned char cpp;
     size_t size;
 };
 
