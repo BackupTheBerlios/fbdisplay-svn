@@ -1,4 +1,5 @@
 #include "cobject.h"
+#include <string.h>
 
 struct fbinfo CObject::m_fbinfo = {0};
 
@@ -13,6 +14,11 @@ CObject::CObject(const struct fbinfo& info)
 
 CObject::~CObject()
 {
+    int i;
+    unsigned char* fbptr;
+    fbptr = m_fbinfo.pFB + (m_iYpos * m_fbinfo.var->xres + m_iXpos) * m_fbinfo.cpp;
+    for(i = 0; i < m_iYsize; i++, fbptr += m_fbinfo.var->xres * m_fbinfo.cpp)
+        memset(fbptr, 0, m_iXsize * m_fbinfo.cpp);
 }
 
 void CObject::SetPos(unsigned int x, unsigned int y)
@@ -50,9 +56,12 @@ void CObject::SetPixel(unsigned int x, unsigned int y, unsigned char color)
 
         m_fbinfo.pFB[ulOffset] = color;
         if (m_fbinfo.cpp >= 2)
-            m_fbinfo.pFB[ulOffset++] = color;
+            m_fbinfo.pFB[++ulOffset] = color;
         if (m_fbinfo.cpp == 4)
-            m_fbinfo.pFB[ulOffset++] = color;
+        {
+            m_fbinfo.pFB[++ulOffset] = color;
+            m_fbinfo.pFB[++ulOffset] = color;
+        }
     }
     return;
 }
