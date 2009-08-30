@@ -117,8 +117,10 @@ bool CGraphicObj::Show()
         unsigned char* pc;
         unsigned short* ps;
         unsigned long* pl;
+        void* pv;
     } ptr;
     unsigned char* fbptr;
+    void *p;
 
     switch(m_fbinfo.var->bits_per_pixel)
     {
@@ -149,7 +151,7 @@ bool CGraphicObj::Show()
 	    fprintf(stderr, "Unsupported video mode! You've got: %dbpp\n", m_fbinfo.var->bits_per_pixel);
 	    exit(1);
     }
-
+    p = ptr.pv;
 	fbptr = m_fbinfo.pFB + (m_iYpos * m_fbinfo.var->xres + m_iXpos) * m_fbinfo.cpp;
 /*
 	if(m_i.alpha)
@@ -195,6 +197,8 @@ bool CGraphicObj::Show()
 	*/
 	    for(i = 0; i < m_i.height; i++, fbptr += m_fbinfo.var->xres * m_fbinfo.cpp, ptr.pc += m_i.width * m_fbinfo.cpp)
 			memcpy(fbptr, ptr.pc, m_i.width * m_fbinfo.cpp);
+
+    delete[] p;
     return true;
 }
 

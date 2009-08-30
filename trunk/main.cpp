@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <linux/fb.h>
 #include <signal.h>
+#include "pthread.h"
 
 #include "ctextobj.h"
 #include "cclockobj.h"
@@ -19,6 +20,9 @@
 
 #include "xmlparser.h"
 
+pthread_mutex_t ListMutex;
+static stFrame * pFrameList = NULL;
+static struct fbinfo info;
 
 void sighandler(int signum)
 {
@@ -39,22 +43,34 @@ void printNodes(stFrame * pFrameList)
     return;
 }
 
+void timerhandler(int signum)
+{
+    pthread_mutex_lock(&ListMutex);
+    parseNextFrame("test.xml", pFrameList, &info);
+    fprintf(stderr, "\nBilddauer in sec: %u\n", pFrameList->ulTime);
+    printNodes(pFrameList);
+    pthread_mutex_unlock(&ListMutex);
+
+    struct itimerval itimerval;
+    itimerval.it_interval.tv_sec = 0;
+    itimerval.it_interval.tv_usec = 0;
+    itimerval.it_value.tv_sec = pFrameList->ulTime;
+    itimerval.it_value.tv_usec = 0;
+    setitimer(ITIMER_REAL, &itimerval, NULL);
+    return;
+}
+
 int main(int argc, char **argv)
 {
-    stFrame * pFrameList = NULL;
     lstNode *pEntry = NULL;
 
     int fh;
-    struct fbinfo info;
-    struct fb_var_screeninfo var;
-
-    unsigned long ulTimer = 0, ulTimeNext = 0;
+    struct itimerval itimerval={0};
 
     signal(SIGHUP, sighandler);
+    signal(SIGALRM, timerhandler);
 
     fh = open("/dev/fb0", O_RDWR);
-
-    ioctl(fh, FBIOGET_VSCREENINFO, &var);
 
     info.var = new struct fb_var_screeninfo;
     ioctl(fh, FBIOGET_VSCREENINFO, info.var);
@@ -93,18 +109,18 @@ int main(int argc, char **argv)
 
     memset(info.pFB, 0x00, info.size);
 
+    pthread_mutex_init(&ListMutex, NULL);
+
     parseNextFrame("test.xml", pFrameList, &info);
-    ulTimeNext = ulTimer + pFrameList->ulTime * 1000;
+    itimerval.it_interval.tv_sec = 0;
+    itimerval.it_interval.tv_usec = 0;
+    itimerval.it_value.tv_sec = pFrameList->ulTime;
+    itimerval.it_value.tv_usec = 0;
+    setitimer(ITIMER_REAL, &itimerval, NULL);
+
     while(1)
     {
-        if (ulTimer > ulTimeNext)
-        {
-            parseNextFrame("test.xml", pFrameList, &info);
-            fprintf(stderr, "\nBilddauer in sec: %u\n", pFrameList->ulTime);
-            printNodes(pFrameList);
-            ulTimeNext = ulTimer + pFrameList->ulTime * 1000;
-        }
-
+        pthread_mutex_lock(&ListMutex);
         list_for_each_entry(pEntry, &pFrameList->node->list, list)
         {
             if (pEntry->obj != NULL)
@@ -112,12 +128,12 @@ int main(int argc, char **argv)
                 pEntry->obj->Refresh();
             }
         }
+        pthread_mutex_unlock(&ListMutex);
 
         struct timespec ts;
         ts.tv_sec = 0;
         ts.tv_nsec = 1000000;
         nanosleep(&ts, NULL);
-        ++ulTimer;
     }
 
     return 0;
