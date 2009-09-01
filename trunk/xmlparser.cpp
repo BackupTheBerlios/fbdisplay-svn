@@ -47,6 +47,7 @@ long int parseNextFrame(char *xmlName, stFrame *&pFrame, fbinfo *info)
     pNewFrame = NULL;
 
     xmlFreeDoc(pDoc);
+    pDoc = NULL;
     return 0;
 }
 
@@ -349,7 +350,7 @@ void renewObjects(stFrame *pFrame, stFrame *pNewFrame, fbinfo *info)
     struct list_head *pos = NULL, *q = NULL;
 
     //Search existent objects
-    if ((pFrame != NULL) && (pFrame->node != NULL))
+    if ((pFrame != NULL) && (pFrame->node != NULL) && (pNewFrame != NULL))
     {
         list_for_each_entry(pFrmTemp, &pNewFrame->node->list, list)
         {
@@ -393,7 +394,9 @@ void renewObjects(stFrame *pFrame, stFrame *pNewFrame, fbinfo *info)
             }
 
         }
-
+    }
+    if ((pFrame != NULL) && (pFrame->node != NULL))
+    {
         //delete current
         list_for_each_safe(pos, q, &pFrame->node->list)
         {
@@ -401,22 +404,7 @@ void renewObjects(stFrame *pFrame, stFrame *pNewFrame, fbinfo *info)
             list_del(pos);
             if (pFrmTemp->obj != NULL)
             {
-                switch (pFrmTemp->type)
-                {
-                case GRAPHIC:
-                    delete ((CGraphicObj *)(pFrmTemp->obj));
-                    break;
-                case TEXT:
-                    delete ((CTextObj *)(pFrmTemp->obj));
-                    break;
-                case CLOCK:
-                    delete ((CClockObj *)(pFrmTemp->obj));
-                    break;
-                default:
-                    delete pFrmTemp->obj;
-                    break;
-                }
-
+                delete pFrmTemp->obj;
             }
             pFrmTemp->obj = NULL;
             if ((pFrmTemp->type == TEXT) && (pFrmTemp->data.dText.text != NULL))
@@ -432,36 +420,41 @@ void renewObjects(stFrame *pFrame, stFrame *pNewFrame, fbinfo *info)
             delete pFrmTemp;
             pFrmTemp = NULL;
         }
+        delete pFrame->node;
+        pFrame->node = NULL;
     }
 
-    //konstruct new
-    list_for_each_entry(pFrmTemp, &pNewFrame->node->list, list)
+    if (pNewFrame != NULL)
     {
-        if (pFrmTemp->obj == NULL)
+        //konstruct new
+        list_for_each_entry(pFrmTemp, &pNewFrame->node->list, list)
         {
-            switch (pFrmTemp->type)
+            if (pFrmTemp->obj == NULL)
             {
-            case GRAPHIC:
-                pFrmTemp->obj = new CGraphicObj(*info);
-                ((CGraphicObj *)(pFrmTemp->obj))->SetPos(pFrmTemp->data.dGraphic.xPos,pFrmTemp->data.dGraphic.yPos);
-                ((CGraphicObj *)(pFrmTemp->obj))->SetSize(pFrmTemp->data.dGraphic.xSize, pFrmTemp->data.dGraphic.ySize);
-                ((CGraphicObj *)(pFrmTemp->obj))->Init(*pFrmTemp->data.dGraphic.path);
-                break;
-            case TEXT:
-                pFrmTemp->obj = new CTextObj(*info);
-                ((CTextObj *)(pFrmTemp->obj))->SetPos(pFrmTemp->data.dText.xPos,pFrmTemp->data.dText.yPos);
-                ((CTextObj *)(pFrmTemp->obj))->SetSize(pFrmTemp->data.dText.xSize, pFrmTemp->data.dText.ySize);
-                ((CTextObj *)(pFrmTemp->obj))->Init(*pFrmTemp->data.dText.text, pFrmTemp->data.dText.speed);
-                break;
-            case CLOCK:
-                pFrmTemp->obj = new CClockObj(*info);
-                ((CClockObj *)(pFrmTemp->obj))->SetPos(pFrmTemp->data.dClock.xPos,pFrmTemp->data.dClock.yPos);
-                ((CClockObj *)(pFrmTemp->obj))->SetSize(pFrmTemp->data.dClock.xSize, pFrmTemp->data.dClock.ySize);
-                ((CClockObj *)(pFrmTemp->obj))->SetClockType(pFrmTemp->data.dClock.type);
-                ((CClockObj *)(pFrmTemp->obj))->Init();
-                break;
-            default:
-                break;
+                switch (pFrmTemp->type)
+                {
+                case GRAPHIC:
+                    pFrmTemp->obj = new CGraphicObj(*info);
+                    ((CGraphicObj *)(pFrmTemp->obj))->SetPos(pFrmTemp->data.dGraphic.xPos,pFrmTemp->data.dGraphic.yPos);
+                    ((CGraphicObj *)(pFrmTemp->obj))->SetSize(pFrmTemp->data.dGraphic.xSize, pFrmTemp->data.dGraphic.ySize);
+                    ((CGraphicObj *)(pFrmTemp->obj))->Init(*pFrmTemp->data.dGraphic.path);
+                    break;
+                case TEXT:
+                    pFrmTemp->obj = new CTextObj(*info);
+                    ((CTextObj *)(pFrmTemp->obj))->SetPos(pFrmTemp->data.dText.xPos,pFrmTemp->data.dText.yPos);
+                    ((CTextObj *)(pFrmTemp->obj))->SetSize(pFrmTemp->data.dText.xSize, pFrmTemp->data.dText.ySize);
+                    ((CTextObj *)(pFrmTemp->obj))->Init(*pFrmTemp->data.dText.text, pFrmTemp->data.dText.speed);
+                    break;
+                case CLOCK:
+                    pFrmTemp->obj = new CClockObj(*info);
+                    ((CClockObj *)(pFrmTemp->obj))->SetPos(pFrmTemp->data.dClock.xPos,pFrmTemp->data.dClock.yPos);
+                    ((CClockObj *)(pFrmTemp->obj))->SetSize(pFrmTemp->data.dClock.xSize, pFrmTemp->data.dClock.ySize);
+                    ((CClockObj *)(pFrmTemp->obj))->SetClockType(pFrmTemp->data.dClock.type);
+                    ((CClockObj *)(pFrmTemp->obj))->Init();
+                    break;
+                default:
+                    break;
+                }
             }
         }
     }

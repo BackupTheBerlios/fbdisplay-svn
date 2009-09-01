@@ -7,6 +7,7 @@ CTextObj::CTextObj(const struct fbinfo& info)
     m_speed = 0;
     m_shiftpos = 0;
     m_text = "";
+    memset(&m_oldtime, 0, sizeof(timeval));
 }
 
 bool CTextObj::Init(string& text, int speed)

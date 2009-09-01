@@ -45,16 +45,24 @@ void printNodes(stFrame * pFrameList)
 
 void timerhandler(int signum)
 {
+    long int lRetVal = 0;
     pthread_mutex_lock(&ListMutex);
-    parseNextFrame("test.xml", pFrameList, &info);
-    fprintf(stderr, "\nBilddauer in sec: %u\n", pFrameList->ulTime);
-    printNodes(pFrameList);
+    lRetVal = parseNextFrame("test.xml", pFrameList, &info);
+//    fprintf(stderr, "\nBilddauer in sec: %u\n", pFrameList->ulTime);
+//    printNodes(pFrameList);
     pthread_mutex_unlock(&ListMutex);
 
     struct itimerval itimerval;
     itimerval.it_interval.tv_sec = 0;
     itimerval.it_interval.tv_usec = 0;
-    itimerval.it_value.tv_sec = pFrameList->ulTime;
+    if (lRetVal < 0)
+    {
+        itimerval.it_value.tv_sec = 1;
+    }
+    else
+    {
+        itimerval.it_value.tv_sec = pFrameList->ulTime;
+    }
     itimerval.it_value.tv_usec = 0;
     setitimer(ITIMER_REAL, &itimerval, NULL);
     return;
@@ -64,7 +72,8 @@ int main(int argc, char **argv)
 {
     lstNode *pEntry = NULL;
 
-    int fh;
+    int fh = 0;
+    long int lRet = 0;
     struct itimerval itimerval={0};
 
     signal(SIGHUP, sighandler);
@@ -111,10 +120,17 @@ int main(int argc, char **argv)
 
     pthread_mutex_init(&ListMutex, NULL);
 
-    parseNextFrame("test.xml", pFrameList, &info);
+    lRet = parseNextFrame("test.xml", pFrameList, &info);
     itimerval.it_interval.tv_sec = 0;
     itimerval.it_interval.tv_usec = 0;
-    itimerval.it_value.tv_sec = pFrameList->ulTime;
+    if (lRet < 0)
+    {
+        itimerval.it_value.tv_sec = 1;
+    }
+    else
+    {
+        itimerval.it_value.tv_sec = pFrameList->ulTime;
+    }
     itimerval.it_value.tv_usec = 0;
     setitimer(ITIMER_REAL, &itimerval, NULL);
 
@@ -123,7 +139,8 @@ int main(int argc, char **argv)
         pthread_mutex_lock(&ListMutex);
         list_for_each_entry(pEntry, &pFrameList->node->list, list)
         {
-            if (pEntry->obj != NULL)
+
+            if ((pEntry != NULL) && (pEntry->obj != NULL))
             {
                 pEntry->obj->Refresh();
             }
@@ -134,6 +151,43 @@ int main(int argc, char **argv)
         ts.tv_sec = 0;
         ts.tv_nsec = 1000000;
         nanosleep(&ts, NULL);
+    }
+
+    struct timespec ts;
+    ts.tv_sec = 10;
+    ts.tv_nsec = 0;
+    nanosleep(&ts, NULL);
+
+    stFrame * pFrm = NULL;
+    renewObjects(pFrameList, pFrm, &info);
+
+    if(pFrameList != NULL)
+    {
+        if (pFrameList->node != NULL)
+        {
+            delete pFrameList->node;
+            pFrameList->node = NULL;
+        }
+        delete pFrameList;
+        pFrameList = NULL;
+    }
+
+    if (pFrm != NULL)
+    {
+        delete pFrm;
+        pFrm = NULL;
+    }
+
+    if (info.var != NULL)
+    {
+        delete info.var;
+        info.var = NULL;
+    }
+
+    if (info.fix != NULL)
+    {
+        delete info.fix;
+        info.fix = NULL;
     }
 
     return 0;
